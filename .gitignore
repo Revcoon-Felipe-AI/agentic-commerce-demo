@@ -54,8 +54,13 @@ supabase/.temp
 .DS_Store
 *.local
 
-# Held back — to be pushed strategically at project end
-docs/
+# Held back — internal docs (publish only HOW-WE-BUILT-THIS by default).
+# To publish another doc: remove its name from this list OR add an explicit
+# negation line below the !docs/HOW-WE-BUILT-THIS.md anchor.
+docs/*
+docs/.brand-research/
+!docs/HOW-WE-BUILT-THIS.md
 CLAUDE.md
-README.md
 .claude/
+design
+design/
