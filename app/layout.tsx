@@ -74,8 +74,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
       className={`${fraunces.variable} ${interTight.variable} ${jetbrainsMono.variable}`}
     >
       <body className="bg-surface-primary text-ink-primary min-h-screen flex flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-ink-primary focus:px-4 focus:py-2 focus:text-surface-primary focus:t-small"
+        >
+          Skip to main content
+        </a>
         <Header />
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">{children}</main>
         <Footer />
         <ChatBubble />
         <ChatTeaser />

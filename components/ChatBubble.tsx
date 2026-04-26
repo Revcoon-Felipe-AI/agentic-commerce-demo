@@ -52,6 +52,8 @@ export function ChatBubble() {
         type="button"
         onClick={handleOpen}
         aria-label="Open chat with Linden"
+        aria-expanded={open}
+        aria-controls="linden-chat-modal"
         className="
           fixed z-40 right-4 bottom-4 md:right-8 md:bottom-8
           inline-flex items-center gap-2

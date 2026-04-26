@@ -24,7 +24,12 @@ export function MessageList({ messages, isStreaming, pulse }: MessageListProps) 
   }, [messages, isStreaming])
 
   return (
-    <ul className="flex flex-col gap-4">
+    <ul
+      className="flex flex-col gap-4"
+      aria-live="polite"
+      aria-relevant="additions"
+      aria-label="Conversation with Linden"
+    >
       {messages.map((message) => (
         <li key={message.id}>
           <MessageRow message={message} pulse={pulse} />

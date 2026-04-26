@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/chat/EmptyState'
 import { MessageList } from '@/components/chat/MessageList'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { useChatSession } from '@/hooks/useChatSession'
+import { useDialogFocus } from '@/hooks/useDialogFocus'
 import { useEscClose } from '@/hooks/useEscClose'
 import { useFocusOnOpen } from '@/hooks/useFocusOnOpen'
 import { useOpenChatRequest } from '@/hooks/useOpenChatRequest'
@@ -29,10 +30,12 @@ export function ChatModal({ open, onClose }: ChatModalProps) {
   const { messages, isStreaming, turns, pulse, sendText } = useChatSession()
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   useEscClose(onClose, open)
   useBodyScrollLock(open)
   useFocusOnOpen(inputRef, open)
+  useDialogFocus(dialogRef, open)
 
   const handleSendText = useCallback(
     (text: string) => {
@@ -56,6 +59,8 @@ export function ChatModal({ open, onClose }: ChatModalProps) {
 
   return (
     <div
+      id="linden-chat-modal"
+      ref={dialogRef}
       className={cn('fixed inset-0 z-50', !open && 'pointer-events-none hidden')}
       role="dialog"
       aria-modal="true"
