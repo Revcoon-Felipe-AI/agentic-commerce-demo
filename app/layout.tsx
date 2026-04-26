@@ -63,6 +63,11 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  // TODO(i18n): `lang` is hard-coded to "en" because the root layout cannot
+  // read nested route params. When we promote i18n beyond the about page,
+  // resolve the active locale via middleware (writing it to a request header
+  // we read here through `next/headers`) and switch this attribute per
+  // request. WCAG 3.1.1 / SEO improves once that lands.
   return (
     <html
       lang="en"

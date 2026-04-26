@@ -47,7 +47,7 @@ export function Footer() {
           </div>
 
           <nav className="flex flex-col gap-2" aria-label="Footer">
-            <Link href="/about" className="t-small text-ink-secondary hover:text-ink-primary hover:underline">
+            <Link href="/about/en" className="t-small text-ink-secondary hover:text-ink-primary hover:underline">
               About
             </Link>
             <a

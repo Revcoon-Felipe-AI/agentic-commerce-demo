@@ -47,7 +47,7 @@ export function Header() {
           <Link href="/" className="t-body text-ink-secondary hover:text-ink-primary">
             Catalog
           </Link>
-          <Link href="/about" className="t-body text-ink-secondary hover:text-ink-primary">
+          <Link href="/about/en" className="t-body text-ink-secondary hover:text-ink-primary">
             About
           </Link>
         </nav>

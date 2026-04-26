@@ -7,12 +7,16 @@ interface LanguageToggleProps {
   variant: 'header' | 'footer'
 }
 
-const ABOUT_EN = '/about'
+const ABOUT_EN = '/about/en'
 const ABOUT_PT = '/about/pt'
+// `/about` (sem locale) redireciona para `/about/en` no servidor — tratamos
+// como rota EN aqui para que o toggle apareça e marque a língua certa.
+const ABOUT_ROOT = '/about'
 
 export function LanguageToggle({ variant }: LanguageToggleProps) {
   const pathname = usePathname()
-  const isAboutRoute = pathname === ABOUT_EN || pathname === ABOUT_PT
+  const isAboutRoute =
+    pathname === ABOUT_EN || pathname === ABOUT_PT || pathname === ABOUT_ROOT
   const isPtActive = pathname === ABOUT_PT
 
   if (variant === 'header' && !isAboutRoute) {
@@ -27,7 +31,7 @@ export function LanguageToggle({ variant }: LanguageToggleProps) {
     <span className="inline-flex items-center gap-2">
       <Link
         href={ABOUT_EN}
-        aria-current={!isPtActive ? 'true' : undefined}
+        aria-current={!isPtActive ? 'page' : undefined}
         className={`${linkBase} ${!isPtActive ? activeClass : inactiveClass}`}
       >
         EN
@@ -35,7 +39,7 @@ export function LanguageToggle({ variant }: LanguageToggleProps) {
       <span className="text-divider" aria-hidden="true">|</span>
       <Link
         href={ABOUT_PT}
-        aria-current={isPtActive ? 'true' : undefined}
+        aria-current={isPtActive ? 'page' : undefined}
         className={`${linkBase} ${isPtActive ? activeClass : inactiveClass}`}
       >
         PT
