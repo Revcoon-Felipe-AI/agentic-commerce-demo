@@ -44,7 +44,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8" aria-label="Primary">
-          <Link href="/" className="t-body text-ink-secondary hover:text-ink-primary">
+          <Link href="/catalog" className="t-body text-ink-secondary hover:text-ink-primary">
             Catalog
           </Link>
           <Link href="/about/en" className="t-body text-ink-secondary hover:text-ink-primary">
