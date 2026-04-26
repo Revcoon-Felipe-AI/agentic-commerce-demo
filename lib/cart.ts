@@ -16,7 +16,11 @@ export function getCart(): CartItem[] {
   try {
     const raw = sessionStorage.getItem(CART_STORAGE_KEY)
     return raw ? (JSON.parse(raw) as CartItem[]) : []
-  } catch {
+  } catch (err) {
+    // sessionStorage corrupted, parse failed, or storage disabled (private mode).
+    // Returning an empty cart is the safe fallback, but we log so the failure
+    // shows up in production observability instead of becoming silent data loss.
+    console.warn('[cart] failed to read cart from sessionStorage', { err })
     return []
   }
 }

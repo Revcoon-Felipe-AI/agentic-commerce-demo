@@ -28,8 +28,15 @@ export function ProductActions({
   }, [productSlug, productName])
 
   const handleAddToBag = useCallback(() => {
-    addToCart(productId, 1)
-    setToast(`Added the ${productName} to your bag.`)
+    try {
+      addToCart(productId, 1)
+      setToast(`Added the ${productName} to your bag.`)
+    } catch (err) {
+      // sessionStorage can throw QuotaExceededError or be disabled in private
+      // browsing. Surface a real message instead of a silent positive toast.
+      console.warn('[ProductActions] addToCart failed', { err })
+      setToast(`Couldn't save your bag — try again.`)
+    }
   }, [productId, productName])
 
   const handleToastClose = useCallback(() => {

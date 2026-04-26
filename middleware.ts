@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const LIMIT = 10
-const WINDOW = 3600
+const MAX_REQUESTS_PER_HOUR = 10
+const WINDOW_SECONDS = 60 * 60
 
 export async function middleware(req: NextRequest) {
   if (!req.nextUrl.pathname.startsWith('/api/chat')) return NextResponse.next()
@@ -14,14 +14,23 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const { kv } = await import('@vercel/kv')
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'anonymous'
   const key = `linden:ratelimit:${ip}`
 
-  const count = await kv.incr(key)
-  if (count === 1) await kv.expire(key, WINDOW)
+  // Fail-open: if KV is unavailable (network blip, quota, regional outage)
+  // we let the request through. Better a momentarily uncapped chat than a
+  // hard outage on the customer-facing endpoint.
+  let count: number
+  try {
+    const { kv } = await import('@vercel/kv')
+    count = await kv.incr(key)
+    if (count === 1) await kv.expire(key, WINDOW_SECONDS)
+  } catch (err) {
+    console.warn('[middleware] rate-limit KV failed; failing open', { err })
+    return NextResponse.next()
+  }
 
-  if (count > LIMIT) {
+  if (count > MAX_REQUESTS_PER_HOUR) {
     return NextResponse.json(
       { error: 'Talked enough for now — clone the repo if you want unlimited.' },
       { status: 429 }
