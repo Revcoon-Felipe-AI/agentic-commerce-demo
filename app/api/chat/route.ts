@@ -16,31 +16,6 @@ type ChatRequestBody = {
   messages?: UIMessage[]
 }
 
-/**
- * Pull the most recent user turn's plain text.
- *
- * AI SDK v6 stores assistant/user content in `message.parts` (typed parts), not
- * a single `content` string — but older clients may still send `content`. We
- * accept either so the model router gets something useful to inspect.
- */
-function extractLastUserText(messages: UIMessage[]): string {
-  const lastUser = messages.findLast((m) => m.role === 'user')
-  if (!lastUser) return ''
-
-  if (Array.isArray(lastUser.parts)) {
-    return lastUser.parts
-      .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
-      .map((part) => part.text)
-      .join(' ')
-      .trim()
-  }
-
-  const legacyContent = (lastUser as unknown as { content?: unknown }).content
-  if (typeof legacyContent === 'string') return legacyContent
-
-  return ''
-}
-
 export async function POST(req: Request): Promise<Response> {
   const body = (await req.json()) as ChatRequestBody
   const messages = body.messages
@@ -49,8 +24,7 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'No messages' }, { status: 400 })
   }
 
-  const lastUserMessage = extractLastUserText(messages)
-  const route = routeModel(lastUserMessage)
+  const route = routeModel()
   const startTime = Date.now()
 
   const modelMessages = await convertToModelMessages(messages)

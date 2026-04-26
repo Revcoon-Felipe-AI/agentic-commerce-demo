@@ -25,7 +25,7 @@ import { ProductCardInline } from '@/components/ProductCardInline'
 import { addToCart } from '@/lib/cart'
 import type { Turn } from '@/lib/ai/telemetry'
 import type { Product, ProductCategory } from '@/lib/products'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/cn'
 
 interface ChatModalProps {
   open: boolean

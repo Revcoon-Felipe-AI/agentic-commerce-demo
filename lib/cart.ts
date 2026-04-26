@@ -5,7 +5,8 @@
  * Mutations dispatch a `cart:changed` event so the header badge can react.
  */
 
-const STORAGE_KEY = 'linden_cart_v1'
+/** sessionStorage key shared with the AI SDK tool that confirms intent. */
+export const CART_STORAGE_KEY = 'linden_cart_v1'
 const CHANGE_EVENT = 'cart:changed'
 
 export type CartItem = { product_id: string; qty: number }
@@ -13,7 +14,7 @@ export type CartItem = { product_id: string; qty: number }
 export function getCart(): CartItem[] {
   if (typeof window === 'undefined') return []
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
+    const raw = sessionStorage.getItem(CART_STORAGE_KEY)
     return raw ? (JSON.parse(raw) as CartItem[]) : []
   } catch {
     return []
@@ -22,7 +23,7 @@ export function getCart(): CartItem[] {
 
 export function setCart(items: CartItem[]): void {
   if (typeof window === 'undefined') return
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: items }))
 }
 

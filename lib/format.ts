@@ -4,6 +4,7 @@ const usdFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 })
 
-export function formatUSD(n: number): string {
-  return usdFormatter.format(n)
+/** USD with no decimals — furniture is priced in whole dollars. */
+export function formatUSD(value: number): string {
+  return usdFormatter.format(value)
 }

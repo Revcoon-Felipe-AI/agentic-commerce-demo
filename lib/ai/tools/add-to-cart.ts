@@ -1,9 +1,10 @@
 /**
  * Tool: add_to_cart
  *
- * Returns the customer's intent. The actual cart lives in browser sessionStorage
- * (key: linden_cart_v1). The client (<ChatModal />) intercepts the tool call
- * via useChat({ onToolCall }) and calls addToCart() from lib/cart.ts.
+ * Returns the customer's intent. The actual cart lives in browser
+ * sessionStorage under `CART_STORAGE_KEY` (see `lib/cart.ts`). The client
+ * (<ChatModal />) intercepts the tool call via useChat({ onToolCall }) and
+ * calls addToCart() from lib/cart.ts.
  *
  * Linden voice: confirm with "Good choice" — no emoji, no "Want more?".
  */

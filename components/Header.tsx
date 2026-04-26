@@ -6,8 +6,6 @@ import { ShoppingBag } from 'lucide-react'
 import { cartCount, onCartChange } from '@/lib/cart'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
-const PULSE_DURATION_MS = 280
-
 export function Header() {
   const [count, setCount] = useState(0)
   const [pulseToken, setPulseToken] = useState(0)
@@ -64,7 +62,7 @@ export function Header() {
             {count > 0 && (
               <span
                 key={pulseToken}
-                className={`linden-badge absolute -top-1.5 -right-2.5 inline-flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent-warm px-1 text-surface-primary text-[10px] font-medium leading-none${pulseToken > 0 ? ' linden-badge--pulse' : ''}`}
+                className={`absolute -top-1.5 -right-2.5 inline-flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent-warm px-1 text-surface-primary text-[10px] font-medium leading-none${pulseToken > 0 ? ' linden-cart-badge-pulse' : ''}`}
                 aria-hidden="true"
               >
                 {count}
@@ -74,20 +72,6 @@ export function Header() {
           <LanguageToggle variant="header" />
         </div>
       </div>
-
-      <style>{`
-        @keyframes linden-badge-pulse {
-          0%   { transform: scale(1);    filter: brightness(1); }
-          50%  { transform: scale(1.15); filter: brightness(1.15); }
-          100% { transform: scale(1);    filter: brightness(1); }
-        }
-        .linden-badge--pulse {
-          animation: linden-badge-pulse ${PULSE_DURATION_MS}ms ease-out 1;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .linden-badge--pulse { animation: none; }
-        }
-      `}</style>
     </header>
   )
 }

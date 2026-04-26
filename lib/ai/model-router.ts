@@ -10,22 +10,12 @@ export type ModelChoice = {
 
 // Pricing per 1M tokens (cache miss; cache hit is significantly cheaper but
 // we don't track it here for the demo). DeepSeek prices as of 2026-04.
-//
-// We keep `reasoner` defined for future use, but `routeModel` always returns
-// `chat` — DeepSeek V3 supports function calling and is the cheapest tier
-// that can run our tools end to end.
 export const MODELS = {
   chat: {
     model: deepseek('deepseek-chat'),
     modelId: 'deepseek-chat',
     costPer1MInput: 0.27,
     costPer1MOutput: 1.10,
-  },
-  reasoner: {
-    model: deepseek('deepseek-reasoner'),
-    modelId: 'deepseek-reasoner',
-    costPer1MInput: 0.55,
-    costPer1MOutput: 2.19,
   },
 } as const
 
@@ -36,15 +26,10 @@ export const MODELS = {
  * Linden tool surface (search_products / compare_products / query_faq /
  * add_to_cart).
  *
- * The `userMessage` and `hasMultipleTools` parameters are accepted to keep
- * a stable signature (and for potential future tier promotion), but are
- * intentionally ignored here.
+ * Add user-message-aware tier promotion here when there's a real signal to
+ * route on (e.g. detected complexity, multi-tool plans).
  */
-export function routeModel(
-  _userMessage: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for API stability + future tier promotion
-  _hasMultipleTools = false,
-): ModelChoice {
+export function routeModel(): ModelChoice {
   return {
     ...MODELS.chat,
     // Reason ships in HTTP header (X-Routing-Reason), so it must stay ASCII-safe.

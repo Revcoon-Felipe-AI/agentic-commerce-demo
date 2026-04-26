@@ -40,7 +40,7 @@ create table documents (
   id          uuid primary key default gen_random_uuid(),
   title       text not null,
   content     text not null,
-  embedding   vector(768),                  -- gemini text-embedding-004 dim
+  embedding   vector(768),                  -- gemini-embedding-001 truncated to 768 (Matryoshka)
   metadata    jsonb default '{}'::jsonb,
   created_at  timestamptz default now() not null
 );

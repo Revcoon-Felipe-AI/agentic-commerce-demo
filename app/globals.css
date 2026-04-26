@@ -12,8 +12,6 @@
   --color-accent-warm: #B85C3C;
   --color-accent-cool: #5A6B5E;
 
-  --color-success: #5A6B5E;
-  --color-warning: #9C7A2E;
   --color-danger: #A33D2E;
   --color-divider: #E2D8C7;
 
@@ -23,7 +21,6 @@
 
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 16px;
 }
 
 :root {
@@ -131,6 +128,23 @@ body {
 
 .linden-pulse-once {
   animation: linden-pulse-once 240ms ease-out 1;
+}
+
+/* Cart badge bump — fires once per cart increment via key-driven remount. */
+@keyframes linden-cart-badge-pulse {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  50%  { transform: scale(1.15); filter: brightness(1.15); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+
+.linden-cart-badge-pulse {
+  animation: linden-cart-badge-pulse 280ms ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linden-cart-badge-pulse {
+    animation: none;
+  }
 }
 
 @keyframes linden-typing-dot {
