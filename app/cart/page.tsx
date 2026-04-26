@@ -1,83 +1,28 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
-import {
-  type CartItem,
-  getCart,
-  onCartChange,
-  removeFromCart,
-  setQty,
-} from '@/lib/cart'
-import { formatUSD } from '@/lib/format'
-import type { Product } from '@/lib/products'
-import { getProductsByIdsBrowser } from '@/lib/products.client'
+import { useCallback, useMemo, useState } from 'react'
+import { CartItemRow } from '@/components/CartItemRow'
+import { CartSummary } from '@/components/CartSummary'
 import { Toast } from '@/components/Toast'
+import { removeFromCart, setQty } from '@/lib/cart'
+import { useCartWithProducts } from '@/app/cart/use-cart-with-products'
 
-interface CartRow {
-  product: Product
-  qty: number
-}
-
-const SHIPPING_LINE = 'Ships in 8 weeks; we’ll email when it leaves the warehouse.'
 const PLACE_ORDER_MESSAGE =
   'This is a portfolio demo — no real checkout. Want to talk to Linden about anything else?'
 const REMOVED_MESSAGE = 'Removed from your bag.'
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[] | null>(null)
-  const [products, setProducts] = useState<Map<string, Product> | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const view = useCartWithProducts()
   const [toast, setToast] = useState<string | null>(null)
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate cart items from sessionStorage post-mount; SSR renders skeleton to avoid hydration mismatch
-    setItems(getCart())
-    const unsubscribe = onCartChange(next => setItems(next))
-    return unsubscribe
+  const handleDecrement = useCallback((productId: string, currentQty: number) => {
+    if (currentQty <= 1) setToast(REMOVED_MESSAGE)
+    setQty(productId, currentQty - 1)
   }, [])
 
-  useEffect(() => {
-    if (items === null) return
-    if (items.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- empty cart short-circuit; products list reflects items state
-      setProducts(new Map())
-      return
-    }
-
-    let cancelled = false
-    async function load(productIds: readonly string[]) {
-      try {
-        const rows = await getProductsByIdsBrowser(productIds)
-        if (cancelled) return
-
-        const map = new Map<string, Product>()
-        for (const row of rows) map.set(row.id, row)
-        setProducts(map)
-      } catch (err) {
-        if (cancelled) return
-        const message = err instanceof Error ? err.message : 'Unknown error'
-        console.error('Failed to load cart products', { error: err })
-        setError(`Failed to load cart products: ${message}`)
-      }
-    }
-
-    void load(items.map(i => i.product_id))
-    return () => {
-      cancelled = true
-    }
-  }, [items])
-
-  const handleDecrement = useCallback((productId: string, current: number) => {
-    if (current <= 1) {
-      setToast(REMOVED_MESSAGE)
-    }
-    setQty(productId, current - 1)
-  }, [])
-
-  const handleIncrement = useCallback((productId: string, current: number) => {
-    setQty(productId, current + 1)
+  const handleIncrement = useCallback((productId: string, currentQty: number) => {
+    setQty(productId, currentQty + 1)
   }, [])
 
   const handleRemove = useCallback((productId: string) => {
@@ -89,31 +34,16 @@ export default function CartPage() {
     setToast(PLACE_ORDER_MESSAGE)
   }, [])
 
-  const handleToastClose = useCallback(() => {
-    setToast(null)
-  }, [])
+  const handleToastClose = useCallback(() => setToast(null), [])
 
-  if (items === null || products === null) {
-    return <CartSkeleton />
-  }
+  const subtotal = useMemo(
+    () => view.rows.reduce((sum, row) => sum + row.product.price_usd * row.qty, 0),
+    [view.rows],
+  )
 
-  if (error) {
-    return (
-      <section className="mx-auto max-w-[640px] px-4 py-20 md:px-12">
-        <h1 className="t-display text-ink-primary">Your bag</h1>
-        <p className="t-body text-danger mt-6">{error}</p>
-      </section>
-    )
-  }
-
-  const rows: CartRow[] = items
-    .map(item => {
-      const product = products.get(item.product_id)
-      return product ? { product, qty: item.qty } : null
-    })
-    .filter((row): row is CartRow => row !== null)
-
-  if (rows.length === 0) {
+  if (view.status === 'loading') return <CartSkeleton />
+  if (view.status === 'error') return <CartError message={view.error} />
+  if (view.status === 'empty') {
     return (
       <>
         <EmptyCart />
@@ -122,86 +52,24 @@ export default function CartPage() {
     )
   }
 
-  const subtotal = rows.reduce((sum, row) => sum + row.product.price_usd * row.qty, 0)
-
   return (
     <section className="mx-auto max-w-[640px] px-4 py-12 md:px-12 md:py-20">
       <h1 className="t-display text-ink-primary">Your bag</h1>
 
       <ul className="mt-12 flex flex-col divide-y divide-divider">
-        {rows.map(row => (
-          <li key={row.product.id} className="flex items-start gap-4 py-6">
-            <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
-              <Image
-                src={row.product.image_url}
-                alt={row.product.name}
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
-            </div>
-            <div className="flex flex-1 flex-col gap-2">
-              <Link
-                href={`/product/${row.product.slug}`}
-                className="t-headline text-ink-primary hover:underline"
-              >
-                {row.product.name}
-              </Link>
-              {row.product.material ? (
-                <p className="t-small text-ink-secondary">{row.product.material}</p>
-              ) : null}
-              <div className="mt-2 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleDecrement(row.product.id, row.qty)}
-                  aria-label={`Decrease quantity of ${row.product.name}`}
-                  className="border-divider text-ink-primary hover:bg-surface-secondary h-8 w-8 rounded-md border"
-                >
-                  −
-                </button>
-                <span className="t-mono text-ink-primary w-6 text-center">
-                  {row.qty}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleIncrement(row.product.id, row.qty)}
-                  aria-label={`Increase quantity of ${row.product.name}`}
-                  className="border-divider text-ink-primary hover:bg-surface-secondary h-8 w-8 rounded-md border"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-3">
-              <p className="t-mono text-ink-primary">
-                {formatUSD(row.product.price_usd * row.qty)}
-              </p>
-              <button
-                type="button"
-                onClick={() => handleRemove(row.product.id)}
-                className="t-small text-ink-secondary hover:text-ink-primary underline"
-              >
-                Remove
-              </button>
-            </div>
-          </li>
+        {view.rows.map(row => (
+          <CartItemRow
+            key={row.product.id}
+            product={row.product}
+            qty={row.qty}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+            onRemove={handleRemove}
+          />
         ))}
       </ul>
 
-      <div className="border-divider mt-8 flex items-baseline justify-between border-t pt-8">
-        <p className="t-subhead text-ink-secondary">Subtotal</p>
-        <p className="t-display text-ink-primary">{formatUSD(subtotal)}</p>
-      </div>
-
-      <p className="t-small text-ink-secondary mt-6">{SHIPPING_LINE}</p>
-
-      <button
-        type="button"
-        onClick={handlePlaceOrder}
-        className="bg-ink-primary text-surface-primary t-subhead mt-4 w-full rounded-md px-6 py-4 transition-opacity hover:opacity-90"
-      >
-        Place Order
-      </button>
+      <CartSummary subtotal={subtotal} onPlaceOrder={handlePlaceOrder} />
 
       {toast ? <Toast message={toast} onClose={handleToastClose} /> : null}
     </section>
@@ -244,6 +112,19 @@ function EmptyCart() {
       >
         Talk to Linden
       </Link>
+    </section>
+  )
+}
+
+interface CartErrorProps {
+  message: string | undefined
+}
+
+function CartError({ message }: CartErrorProps) {
+  return (
+    <section className="mx-auto max-w-[640px] px-4 py-20 md:px-12">
+      <h1 className="t-display text-ink-primary">Your bag</h1>
+      <p className="t-body text-danger mt-6">{message ?? 'Something went wrong.'}</p>
     </section>
   )
 }
