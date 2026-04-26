@@ -1,11 +1,7 @@
 'use client'
 
 import { Leaf } from 'lucide-react'
-
-// Event name will be centralized in `lib/events.ts` in a follow-up frente
-// (`fix/08-cross-cutting-helpers`). Until then, every callsite uses the
-// literal — keep this string in sync with ChatBubble/ChatModal/ProductActions.
-const OPEN_CHAT_EVENT = 'linden:open-chat'
+import { dispatchOpenChat, type LindenOpenChatDetail } from '@/lib/events'
 
 interface TalkToLindenButtonProps {
   label: string
@@ -21,15 +17,14 @@ export function TalkToLindenButton({
   autoSend,
 }: TalkToLindenButtonProps) {
   function handleClick(): void {
-    if (typeof window === 'undefined') return
-    const detail =
-      productSlug !== undefined || productName !== undefined || autoSend !== undefined
-        ? { productSlug, productName, autoSend }
-        : undefined
-    const event = detail
-      ? new CustomEvent(OPEN_CHAT_EVENT, { detail })
-      : new CustomEvent(OPEN_CHAT_EVENT)
-    window.dispatchEvent(event)
+    // exactOptionalPropertyTypes forbids passing `undefined` explicitly —
+    // build the detail by spreading only the keys that are actually set.
+    const detail: LindenOpenChatDetail = {
+      ...(productSlug !== undefined && { productSlug }),
+      ...(productName !== undefined && { productName }),
+      ...(autoSend !== undefined && { autoSend }),
+    }
+    dispatchOpenChat(Object.keys(detail).length > 0 ? detail : undefined)
   }
 
   return (

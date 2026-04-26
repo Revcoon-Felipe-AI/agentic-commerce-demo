@@ -1,23 +1,6 @@
 import Link from 'next/link'
 import { LanguageToggle } from '@/components/LanguageToggle'
-
-function LeafMark() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-accent-cool h-5 w-5"
-      aria-hidden="true"
-    >
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96a1 1 0 0 1 1.5.5c.06.18.18.86.18 1.54a18.94 18.94 0 0 1-3.43 11.13C15.6 19.18 13 20 11 20Z" />
-      <path d="M2 21c0-3 1.85-5.36 5.08-6" />
-    </svg>
-  )
-}
+import { LeafIcon } from '@/components/icons/LeafIcon'
 
 export function Footer() {
   const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL ?? '#'
@@ -29,7 +12,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16">
           <div>
             <div className="flex items-center gap-2.5">
-              <LeafMark />
+              <LeafIcon size={20} className="text-accent-cool" />
               <p className="t-headline text-ink-primary leading-none">Linden</p>
             </div>
             <p className="t-small text-ink-secondary mt-3">

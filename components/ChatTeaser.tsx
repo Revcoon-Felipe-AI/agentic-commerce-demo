@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
+import { LeafIcon } from '@/components/icons/LeafIcon'
+import {
+  LINDEN_CHAT_OPENED_EVENT,
+  LINDEN_OPEN_CHAT_EVENT,
+} from '@/lib/events'
 
 /**
  * Rotating invitation teaser shown above the persistent chat pill.
@@ -12,7 +17,7 @@ import { X } from 'lucide-react'
  *
  * Stops permanently for the session when:
  *   - The customer dismisses it (X button) -> sessionStorage flag
- *   - The chat opens via any code path (linden:open-chat OR linden:chat-opened events)
+ *   - The chat opens via any code path (open-chat request OR chat-opened notification)
  *
  * Pure presentation; never touches the AI agent, the chat hook, or the cart.
  */
@@ -26,8 +31,6 @@ const MESSAGES = [
 ] as const
 
 const STORAGE_KEY = 'linden_teaser_dismissed'
-const OPEN_CHAT_REQUEST = 'linden:open-chat'
-const CHAT_OPENED_NOTIFICATION = 'linden:chat-opened'
 
 const INITIAL_DELAY_MS = 5_000
 const TYPING_MS = 1_200
@@ -96,11 +99,11 @@ export function ChatTeaser() {
 
   // Stop on any chat-open signal.
   useEffect(() => {
-    window.addEventListener(OPEN_CHAT_REQUEST, stop)
-    window.addEventListener(CHAT_OPENED_NOTIFICATION, stop)
+    window.addEventListener(LINDEN_OPEN_CHAT_EVENT, stop)
+    window.addEventListener(LINDEN_CHAT_OPENED_EVENT, stop)
     return () => {
-      window.removeEventListener(OPEN_CHAT_REQUEST, stop)
-      window.removeEventListener(CHAT_OPENED_NOTIFICATION, stop)
+      window.removeEventListener(LINDEN_OPEN_CHAT_EVENT, stop)
+      window.removeEventListener(LINDEN_CHAT_OPENED_EVENT, stop)
     }
   }, [stop])
 
@@ -136,7 +139,7 @@ export function ChatTeaser() {
         "
       >
         <div className="flex items-start gap-2.5">
-          <LeafIcon />
+          <LeafIcon className="text-accent-cool mt-0.5 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             {phase === 'typing' ? (
               <TypingDots />
@@ -159,24 +162,6 @@ export function ChatTeaser() {
         />
       </div>
     </div>
-  )
-}
-
-function LeafIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-accent-cool mt-0.5 h-4 w-4 flex-shrink-0"
-      aria-hidden="true"
-    >
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96a1 1 0 0 1 1.5.5c.06.18.18.86.18 1.54a18.94 18.94 0 0 1-3.43 11.13C15.6 19.18 13 20 11 20Z" />
-      <path d="M2 21c0-3 1.85-5.36 5.08-6" />
-    </svg>
   )
 }
 

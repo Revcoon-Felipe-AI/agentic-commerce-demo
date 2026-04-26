@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { addToCart } from '@/lib/cart'
 import { Toast } from '@/components/Toast'
+import { dispatchOpenChat } from '@/lib/events'
 
 interface ProductActionsProps {
   productSlug: string
@@ -20,11 +21,7 @@ export function ProductActions({
   const handleTalkToLinden = useCallback(() => {
     // autoSend so Linden's reply lands immediately — the customer doesn't
     // hit a pre-filled input wondering whether they need to confirm.
-    window.dispatchEvent(
-      new CustomEvent('linden:open-chat', {
-        detail: { productSlug, productName, autoSend: true },
-      }),
-    )
+    dispatchOpenChat({ productSlug, productName, autoSend: true })
   }, [productSlug, productName])
 
   const handleAddToBag = useCallback(() => {

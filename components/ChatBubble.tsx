@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { ChatModal } from '@/components/ChatModal'
-
-const OPEN_CHAT_EVENT = 'linden:open-chat'
+import { LeafIcon } from '@/components/icons/LeafIcon'
+import { LINDEN_OPEN_CHAT_EVENT, dispatchChatOpened } from '@/lib/events'
 
 export function ChatBubble() {
   const [open, setOpen] = useState(false)
@@ -12,9 +12,7 @@ export function ChatBubble() {
     setOpen(true)
     // Broadcast so passive listeners (e.g. ChatTeaser) can react without
     // having to know about ChatBubble's internal state.
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('linden:chat-opened'))
-    }
+    dispatchChatOpened()
   }, [])
   const handleClose = useCallback(() => setOpen(false), [])
 
@@ -22,8 +20,8 @@ export function ChatBubble() {
     function onOpen() {
       setOpen(true)
     }
-    window.addEventListener(OPEN_CHAT_EVENT, onOpen)
-    return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpen)
+    window.addEventListener(LINDEN_OPEN_CHAT_EVENT, onOpen)
+    return () => window.removeEventListener(LINDEN_OPEN_CHAT_EVENT, onOpen)
   }, [])
 
   // Power-user shortcuts: Cmd/Ctrl+K or "/" toggles the chat. We only handle
@@ -77,22 +75,4 @@ function isEditableTarget(target: EventTarget | null): boolean {
   if (target.isContentEditable) return true
   const tag = target.tagName
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
-}
-
-function LeafIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-      aria-hidden="true"
-    >
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96a1 1 0 0 1 1.5.5c.06.18.18.86.18 1.54a18.94 18.94 0 0 1-3.43 11.13C15.6 19.18 13 20 11 20Z" />
-      <path d="M2 21c0-3 1.85-5.36 5.08-6" />
-    </svg>
-  )
 }
