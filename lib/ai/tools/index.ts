@@ -11,7 +11,6 @@ import { getPromotionsTool } from './get-promotions'
 import { compareProductsTool } from './compare-products'
 import { addToCartTool } from './add-to-cart'
 import { queryFaqTool } from './query-faq'
-import { routeDecisionTool } from './route-decision'
 
 export const allTools = {
   search_products: searchProductsTool,
@@ -20,5 +19,4 @@ export const allTools = {
   compare_products: compareProductsTool,
   add_to_cart: addToCartTool,
   query_faq: queryFaqTool,
-  route_decision: routeDecisionTool,
 } as const
