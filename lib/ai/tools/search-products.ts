@@ -7,7 +7,7 @@
 
 import { tool } from 'ai'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { searchProducts } from '@/lib/products'
 
 export const searchProductsTool = tool({
   description:
@@ -44,19 +44,14 @@ export const searchProductsTool = tool({
       ),
   }),
   execute: async ({ category, keywords, min_price_usd, max_price_usd, limit }) => {
-    const supabase = createServerClient()
-    let query = supabase.from('products').select('*').eq('in_stock', true)
+    const products = await searchProducts({
+      ...(category !== undefined && { category }),
+      ...(keywords !== undefined && { keywords }),
+      ...(min_price_usd !== undefined && { minPriceUsd: min_price_usd }),
+      ...(max_price_usd !== undefined && { maxPriceUsd: max_price_usd }),
+      limit,
+    })
 
-    if (category) query = query.eq('category', category)
-    if (min_price_usd !== undefined) query = query.gte('price_usd', min_price_usd)
-    if (max_price_usd !== undefined) query = query.lte('price_usd', max_price_usd)
-    if (keywords) {
-      query = query.or(`name.ilike.%${keywords}%,description.ilike.%${keywords}%`)
-    }
-
-    const { data, error } = await query.limit(limit)
-    if (error) throw new Error(`search_products failed: ${error.message}`)
-
-    return { products: data ?? [], count: data?.length ?? 0 }
+    return { products, count: products.length }
   },
 })

@@ -8,7 +8,12 @@
 
 import { tool } from 'ai'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { getRotatingOutProducts } from '@/lib/products'
+
+const NO_SALES_MESSAGE =
+  'Linden does not run promotional sales. No pieces are currently rotating out.'
+const ROTATING_OUT_MESSAGE =
+  'These pieces are leaving the catalog within the month — last chance to order at the current price.'
 
 export const getPromotionsTool = tool({
   description:
@@ -23,24 +28,10 @@ export const getPromotionsTool = tool({
       .describe('Max 4 rotating-out pieces to return. Default 4.'),
   }),
   execute: async ({ limit }) => {
-    const supabase = createServerClient()
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, slug, name, price_usd, image_url, category, lead_time_weeks')
-      .eq('in_stock', true)
-      .eq('rotating_out', true)
-      .limit(limit)
-
-    if (error) throw new Error(`get_promotions failed: ${error.message}`)
-
-    const rows = data ?? []
-
+    const rotating = await getRotatingOutProducts(limit)
     return {
-      rotating_out: rows,
-      message:
-        rows.length === 0
-          ? 'Linden does not run promotional sales. No pieces are currently rotating out.'
-          : 'These pieces are leaving the catalog within the month — last chance to order at the current price.',
+      rotating_out: rotating,
+      message: rotating.length === 0 ? NO_SALES_MESSAGE : ROTATING_OUT_MESSAGE,
     }
   },
 })

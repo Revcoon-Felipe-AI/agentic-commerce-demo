@@ -7,7 +7,7 @@
 
 import { tool } from 'ai'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { compareProducts } from '@/lib/products'
 
 export const compareProductsTool = tool({
   description:
@@ -22,20 +22,7 @@ export const compareProductsTool = tool({
       ),
   }),
   execute: async ({ product_ids }) => {
-    const supabase = createServerClient()
-    const orFilter = product_ids
-      .map((id) => `id.eq.${id},slug.eq.${id}`)
-      .join(',')
-
-    const { data, error } = await supabase
-      .from('products')
-      .select(
-        'id, slug, name, price_usd, dimensions, material, lead_time_weeks, image_url, category',
-      )
-      .or(orFilter)
-
-    if (error) throw new Error(`compare_products failed: ${error.message}`)
-
-    return { products: data ?? [] }
+    const products = await compareProducts(product_ids)
+    return { products }
   },
 })

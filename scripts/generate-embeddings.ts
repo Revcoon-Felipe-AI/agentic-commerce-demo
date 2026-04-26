@@ -9,72 +9,98 @@
  * Required env: GOOGLE_GENERATIVE_AI_API_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_KEY.
  */
 
-import { google } from '@ai-sdk/google'
-import { embed } from 'ai'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { embedQuestion, EMBEDDING_DIM } from '@/lib/ai/embeddings'
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
-const GOOGLE_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+const REQUIRED_ENV = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'SUPABASE_SERVICE_KEY',
+  'GOOGLE_GENERATIVE_AI_API_KEY',
+] as const
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !GOOGLE_KEY) {
-  console.error('Missing env. Need: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_KEY, GOOGLE_GENERATIVE_AI_API_KEY.')
-  process.exit(1)
+const RETRY_BACKOFF_MS = 2_000
+
+type DocRow = { id: string; title: string; content: string }
+
+function ensureEnv(): void {
+  const missing = REQUIRED_ENV.filter(key => !process.env[key])
+  if (missing.length > 0) {
+    console.error(`Missing env: ${missing.join(', ')}.`)
+    process.exit(1)
+  }
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-
-async function main() {
-  const { data: docs, error } = await supabase
+async function fetchDocsMissingEmbedding(): Promise<DocRow[]> {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
     .from('documents')
     .select('id, title, content')
     .is('embedding', null)
 
-  if (error) {
-    console.error('Failed to fetch documents:', error.message)
-    process.exit(1)
-  }
+  if (error) throw new Error(`fetchDocsMissingEmbedding failed: ${error.message}`)
+  return (data ?? []) as DocRow[]
+}
 
-  if (!docs || docs.length === 0) {
+async function embedAndStore(doc: DocRow): Promise<void> {
+  const supabase = createAdminClient()
+  const embedding = await embedQuestion(doc.content)
+  const { error } = await supabase
+    .from('documents')
+    .update({ embedding })
+    .eq('id', doc.id)
+  if (error) throw new Error(`update embedding failed for ${doc.id}: ${error.message}`)
+}
+
+async function processDoc(doc: DocRow): Promise<boolean> {
+  try {
+    await embedAndStore(doc)
+    return true
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.warn(`  retry ${doc.title} after error: ${message}`)
+    await new Promise(resolve => setTimeout(resolve, RETRY_BACKOFF_MS))
+    try {
+      await embedAndStore(doc)
+      return true
+    } catch (retryErr) {
+      const retryMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error'
+      console.error(`  fail ${doc.title}: ${retryMessage}`)
+      return false
+    }
+  }
+}
+
+async function main(): Promise<void> {
+  ensureEnv()
+
+  const docs = await fetchDocsMissingEmbedding()
+  if (docs.length === 0) {
     console.log('No documents missing embeddings. Nothing to do.')
     return
   }
 
-  console.log(`Embedding ${docs.length} document(s)...`)
+  console.log(`Embedding ${docs.length} document(s) at ${EMBEDDING_DIM} dimensions...`)
 
-  // Use gemini-embedding-001 (current production model as of 2026).
-  // Default output is 3072-dim; we cap to 768 via providerOptions to match the schema's vector(768) column.
-  // Matryoshka representation learning means the truncated embedding remains semantically valid.
-  const embeddingModel = google.textEmbeddingModel('gemini-embedding-001')
-
+  let succeeded = 0
+  let failed = 0
   for (const doc of docs) {
-    const { embedding } = await embed({
-      model: embeddingModel,
-      value: doc.content,
-      providerOptions: {
-        google: {
-          outputDimensionality: 768,
-        },
-      },
-    })
-
-    const { error: updateError } = await supabase
-      .from('documents')
-      .update({ embedding })
-      .eq('id', doc.id)
-
-    if (updateError) {
-      console.error(`Failed to update ${doc.id} (${doc.title}):`, updateError.message)
-      continue
+    const ok = await processDoc(doc)
+    if (ok) {
+      succeeded++
+      console.log(`  ok  ${doc.title}`)
+    } else {
+      failed++
     }
-
-    console.log(`  ok  ${doc.title}`)
   }
 
-  console.log('Done.')
+  console.log(`Done. ${succeeded} succeeded, ${failed} failed.`)
+  if (failed > 0) process.exit(1)
 }
 
 main().catch((err: unknown) => {
-  console.error('Unexpected error:', err instanceof Error ? err.message : err)
+  const message = err instanceof Error ? err.message : String(err)
+  const stack = err instanceof Error ? err.stack : undefined
+  console.error('Unexpected error:', message)
+  if (stack) console.error(stack)
   process.exit(1)
 })

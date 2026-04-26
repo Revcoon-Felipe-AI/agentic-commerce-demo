@@ -6,7 +6,7 @@
 
 import { tool } from 'ai'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { findProductByIdOrSlug } from '@/lib/products'
 
 export const getProductDetailsTool = tool({
   description:
@@ -18,16 +18,8 @@ export const getProductDetailsTool = tool({
       .describe('UUID or slug of the piece (e.g., "easy-sunday-lounge").'),
   }),
   execute: async ({ product_id }) => {
-    const supabase = createServerClient()
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .or(`id.eq.${product_id},slug.eq.${product_id}`)
-      .maybeSingle()
-
-    if (error) throw new Error(`get_product_details failed: ${error.message}`)
-    if (!data) return { found: false as const }
-
-    return { found: true as const, product: data }
+    const product = await findProductByIdOrSlug(product_id)
+    if (!product) return { found: false as const }
+    return { found: true as const, product }
   },
 })

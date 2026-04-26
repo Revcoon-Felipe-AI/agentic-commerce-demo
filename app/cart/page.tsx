@@ -12,7 +12,7 @@ import {
 } from '@/lib/cart'
 import { formatUSD } from '@/lib/format'
 import type { Product } from '@/lib/products'
-import { createBrowserClient } from '@/lib/supabase/client'
+import { getProductsByIdsBrowser } from '@/lib/products.client'
 import { Toast } from '@/components/Toast'
 
 interface CartRow {
@@ -38,8 +38,6 @@ export default function CartPage() {
     return unsubscribe
   }, [])
 
-  // Direct browser-side fetch keeps the cart page client-only without a dedicated
-  // /api/products endpoint; RLS allows public read of in_stock products.
   useEffect(() => {
     if (items === null) return
     if (items.length === 0) {
@@ -51,18 +49,11 @@ export default function CartPage() {
     let cancelled = false
     async function load(productIds: readonly string[]) {
       try {
-        const supabase = createBrowserClient()
-        const { data, error: queryError } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', productIds)
-        if (queryError) throw queryError
+        const rows = await getProductsByIdsBrowser(productIds)
         if (cancelled) return
 
         const map = new Map<string, Product>()
-        for (const row of (data ?? []) as Product[]) {
-          map.set(row.id, row)
-        }
+        for (const row of rows) map.set(row.id, row)
         setProducts(map)
       } catch (err) {
         if (cancelled) return
