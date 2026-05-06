@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Linden">
+  <rect width="32" height="32" rx="6" fill="#F7F2EA"/>
+  <g
+    fill="none"
+    stroke="#5A6B5E"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    transform="translate(4 4) scale(1.0)"
+  >
+    <path d="M14.667 21.333A9.333 9.333 0 0 1 13.067 8.133c7.6-1.466 9.6-2.16 12.533-4.187a1.333 1.333 0 0 1 2 .667c.08.24.24 1.147.24 2.053a25.253 25.253 0 0 1-4.573 14.84c-2.467 4.027-5.934 5.227-8.6 5.227Z"/>
+    <path d="M2.667 28c0-4 2.466-7.147 6.773-8"/>
+  </g>
+</svg>

@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-surface-primary: #F7F2EA;
+  --color-surface-secondary: #EFE7DA;
+  --color-surface-elevated: #FBF7F1;
+
+  --color-ink-primary: #2A2722;
+  --color-ink-secondary: #5C544A;
+  --color-ink-tertiary: #8C8275;
+
+  --color-accent-warm: #B85C3C;
+  --color-accent-cool: #5A6B5E;
+
+  --color-danger: #A33D2E;
+  --color-divider: #E2D8C7;
+
+  --font-serif: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background-color: var(--color-surface-primary);
+  color: var(--color-ink-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.t-hero {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 2.75rem;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.t-display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+
+.t-headline {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.t-subhead {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.t-small {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.t-mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.t-micro {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (min-width: 768px) {
+  .t-hero {
+    font-size: 4.5rem;
+  }
+  .t-display {
+    font-size: 3rem;
+  }
+  .t-headline {
+    font-size: 1.875rem;
+  }
+  .t-subhead {
+    font-size: 1.375rem;
+  }
+  .t-body {
+    font-size: 1.0625rem;
+  }
+  .t-small {
+    font-size: 0.9375rem;
+  }
+  .t-mono {
+    font-size: 0.9375rem;
+  }
+}
+
+@keyframes linden-pulse-once {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.linden-pulse-once {
+  animation: linden-pulse-once 240ms ease-out 1;
+}
+
+/* Cart badge bump — fires once per cart increment via key-driven remount. */
+@keyframes linden-cart-badge-pulse {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  50%  { transform: scale(1.15); filter: brightness(1.15); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+
+.linden-cart-badge-pulse {
+  animation: linden-cart-badge-pulse 280ms ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linden-cart-badge-pulse {
+    animation: none;
+  }
+}
+
+@keyframes linden-typing-dot {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+.linden-typing-dot {
+  animation: linden-typing-dot 1200ms ease-in-out infinite;
+  opacity: 0.4;
+}
+
+/* Reveal: lifts content into view as it scrolls past the fold. Pure CSS;
+   IntersectionObserver in components/Reveal.tsx flips the --in modifier. */
+.linden-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+}
+
+.linden-reveal--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linden-reveal,
+  .linden-reveal--in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Hero scroll cue — gentle bounce hint at the bottom of the first viewport. */
+@keyframes linden-scroll-cue {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
+
+.linden-scroll-cue {
+  animation: linden-scroll-cue 2400ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linden-scroll-cue {
+    animation: none;
+  }
+}
+
+/* Chat teaser — fade + lift entrance for the rotating invitation. */
+@keyframes linden-teaser-enter {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.linden-teaser-enter {
+  animation: linden-teaser-enter 320ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linden-teaser-enter {
+    animation: none;
+  }
+}
